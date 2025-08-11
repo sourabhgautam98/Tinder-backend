@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -18,6 +19,11 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+    validate(value) {
+      if (!validator.isStrongPassword(value)) {
+        throw new Error("Weak password: " + value);
+      }
+    },
   },
   age: {
     type: Number,
@@ -35,11 +41,20 @@ const userSchema = new mongoose.Schema({
   photoUrl: {
     type: String,
     default: "https://artscimedia.case.edu/wp-content/uploads/sites/79/2016/12/14205134/no-user-image.gif",
+    validate(value) {
+      if (!validator.isURL(value)) {
+        throw new Error("Invalid photo URL: " + value);
+      }
+    },
   },
-  skills:{
+  skills: {
     type: [String],
-
-  }
+    validate(value) {
+      if (value.length > 10) {
+        throw new Error("Skills cannot be more than 10");
+      }
+    },
+  },
 
 });
 
