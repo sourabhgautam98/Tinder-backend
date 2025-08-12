@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -15,6 +17,11 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     unique: true,
     trim: true,
+    validate(value) {
+      if (!validator.isEmail(value)) {
+        throw new Error("Invalid email");
+      }
+    },
   },
   password: {
     type: String,
@@ -40,7 +47,8 @@ const userSchema = new mongoose.Schema({
   },
   photoUrl: {
     type: String,
-    default: "https://artscimedia.case.edu/wp-content/uploads/sites/79/2016/12/14205134/no-user-image.gif",
+    default:
+      "https://artscimedia.case.edu/wp-content/uploads/sites/79/2016/12/14205134/no-user-image.gif",
     validate(value) {
       if (!validator.isURL(value)) {
         throw new Error("Invalid photo URL: " + value);
@@ -55,7 +63,23 @@ const userSchema = new mongoose.Schema({
       }
     },
   },
+}, { timestamps: true });
 
-});
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = await jwt.sign(
+    { _id: user._id},
+    "Sourabh447",
+    { expiresIn: "7d" }
+  );
+  return token;
+};
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+const user = this;
+const passwordHash = user.password
 
-module.exports = mongoose.model("User", userSchema) 
+const isPasswordValid = await bcrypt.compare(passwordInputByUser, passwordHash);
+return isPasswordValid;
+};
+
+module.exports = mongoose.model("User", userSchema);

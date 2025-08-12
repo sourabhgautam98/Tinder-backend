@@ -4,8 +4,12 @@ const app = express();
 const User = require("./models/user");
 const { validateSignUpData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieparser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 
 app.use(express.json());
+app.use(cookieparser());
 
 app.post("/signup", async (req, res) => {
   try {
@@ -27,89 +31,48 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-
 app.post("/login", async (req, res) => {
- try {
+  try {
     const { emailId, password } = req.body;
 
-    const user = await User.findOne({ emailId: emailId })
+    const user = await User.findOne({ emailId: emailId });
     if (!user) {
-      throw new Error("Email and password not correct")
+      throw new Error("Email and password not correct");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
 
     if (isPasswordValid) {
-     res.send("Login Successful")
-    }else{
-      throw new Error("Email and password not correct")
+      
+      const token = await user.getJWT();
+
+      res.cookie("token", token,{
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+      res.send("Login Successful");
+    } else {
+      throw new Error("Email and password not correct");
     }
   } catch (err) {
-  res.status(400).send("ERROR: " + err.message);
- }
-});
-
-
-
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.emailId;
-
-  try {
-    const users = await User.find({ emailId: userEmail });
-    if (users.length === 0) {
-      res.status(404).send("User not found");
-    }
-    res.send(users);
-  } catch (err) {
-    res.status(400).send("something went wrong");
+    res.status(400).send("ERROR: " + err.message);
   }
 });
 
-app.get("/feed", async (req, res) => {
+app.post("/profile", userAuth, async (req, res) => {
   try {
-    const users = await User.find({});
-    res.send(users);
+    res.send(req.user);
   } catch (err) {
-    res.status(400).send("something went wrong");
+   res.status(400).send("ERROR: " + err.message);
   }
 });
 
-app.delete("/user", async (req, res) => {
-  const userId = req.body.userId;
-  try {
-    const user = await User.findByIdAndDelete({ _id: userId });
-    res.send("User deleted Successfully");
-  } catch (err) {
-    res.status(400).send("something went wrong");
-  }
-});
 
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
+app.post("/sendConnecttionRequest", userAuth, async (req, res) => {
+const user = req.user;
 
-  try {
-    const ALLOWED_UPDATES = ["age", "gender", "photoUrl", "skills"];
+console.log("Sending a connection request")
 
-    const isUpdateAllowed = Object.keys(data).every((key) =>
-      ALLOWED_UPDATES.includes(key)
-    );
-    if (!isUpdateAllowed) {
-      res.status(400).send("Update not allowed");
-    }
-
-    if (data?.skills.length > 10) {
-      throw new Error("Skills cannot be more than 10");
-    }
-    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
-    console.log(user);
-    res.send("User updated Successfully");
-  } catch (err) {
-    res.status(400).send("Error updating user: " + err.message);
-  }
-});
+res.send( user.firstName + " sent the connect Request ")
+})
 
 connectDb()
   .then(() => {
