@@ -31,20 +31,25 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { toUserId: loggedInUser._id, status: "accepted" },
         { fromUserId: loggedInUser._id, status: "accepted" },
       ],
-    })
-      .populate("fromUserId", USER_SAFE_DATA)
-      .populate("toUserId", USER_SAFE_DATA);
-
-    console.log(connectionRequests);
-
-    const data = connectionRequests.map((row) => {
-      if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
-        return row.toUserId;
-      }
-      return row.fromUserId;
     });
 
-    res.json({ data });
+    const userIds = [];
+    connectionRequests.forEach(request => {
+      if (request.fromUserId.toString() !== loggedInUser._id.toString()) {
+        userIds.push(request.fromUserId);
+      }
+      if (request.toUserId.toString() !== loggedInUser._id.toString()) {
+        userIds.push(request.toUserId);
+      }
+    });
+
+    const uniqueUserIds = [...new Set(userIds.map(id => id.toString()))];
+    
+    const connectedUsers = await User.find({
+      _id: { $in: uniqueUserIds }
+    }).select(USER_SAFE_DATA);
+
+    res.json({ data: connectedUsers });
   } catch (err) {
     res.status(400).send({ message: err.message });
   }

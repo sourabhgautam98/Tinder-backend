@@ -17,8 +17,15 @@ authRoutes.post("/signup", async (req, res) => {
       emailId,
       password: passwordHash,
     });
-    await user.save();
-    res.send("User added successfully");
+    const savedUser = await user.save();
+
+    const token = await user.getJWT();
+
+      res.cookie("token", token,{
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+      
+    res.json({ message: "User added successfully", data: savedUser });
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
   }
@@ -41,7 +48,12 @@ authRoutes.post("/login", async (req, res) => {
       res.cookie("token", token,{
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       });
-      res.send("Login Successful");
+      res.send({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        emailId: user.emailId,
+        photoUrl: user.photoUrl,
+      });
     } else {
       throw new Error("Email and password not correct");
     }
