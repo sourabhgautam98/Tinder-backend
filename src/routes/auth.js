@@ -53,6 +53,8 @@ authRoutes.post("/login", async (req, res) => {
         lastName: user.lastName,
         emailId: user.emailId,
         photoUrl: user.photoUrl,
+        age: user.age,
+        skills: user.skills,
       });
     } else {
       throw new Error("Email and password not correct");
