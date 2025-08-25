@@ -1,36 +1,41 @@
 const express = require("express");
 const connectDb = require("./config/database");
-const app = express();
-const cookieparser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
+const app = express();
+
+// Middlewares
 app.use(express.json());
-app.use(cookieparser());
+app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173", 
+    origin: "http://localhost:5173",
     credentials: true,              
   })
 );
 
+// Routes
 const authRoutes = require("./routes/auth");
 const requestRoutes = require("./routes/request");
-const  profileRoutes = require("./routes/profile");
-const userRouter = require("./routes/user");
+const profileRoutes = require("./routes/profile");
+const userRoutes = require("./routes/user");
 
-app.use("/", authRoutes);
-app.use("/", requestRoutes);
-app.use("/", profileRoutes);
-app.use("/", userRouter);
+app.use("/auth", authRoutes);
+app.use("/requests", requestRoutes);
+app.use("/profile", profileRoutes);
+app.use("/users", userRoutes);
 
+// Database Connection & Server Start
 connectDb()
   .then(() => {
-    console.log("Database connection established");
+    console.log("✅ Database connection established");
     app.listen(3000, () => {
-      console.log("my server"); 
-      console.log("port 3000");
+      console.log("🚀 Server running on http://localhost:3000");
     });
   })
   .catch((err) => {
-    console.log("Database cannot be connected", err);
+    console.error("❌ Database connection failed:", err);
   });
+
+module.exports = app;

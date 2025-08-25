@@ -1,75 +1,10 @@
-const express = require('express');
-const authRoutes = express.Router();
-const { validateSignUpData } = require("../utils/validation");
-const User = require("../models/user");
-const bcrypt = require("bcrypt");  
+const express = require("express");
+const router = express.Router();
+const authController = require("../controllers/authController");
 
-authRoutes.post("/signup", async (req, res) => {
-  try {
-    validateSignUpData(req.body);
-    const { firstName, lastName, emailId, password } = req.body;
-    const passwordHash = await bcrypt.hash(password, 10);
-    console.log("Password Hash: ", passwordHash);
+// Routes
+router.post("/signup", authController.signup);
+router.post("/login", authController.login);
+router.post("/logout", authController.logout);
 
-    const user = new User({
-      firstName,
-      lastName,
-      emailId,
-      password: passwordHash,
-    });
-    const savedUser = await user.save();
-
-    const token = await user.getJWT();
-
-      res.cookie("token", token,{
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      });
-      
-    res.json({ message: "User added successfully", data: savedUser });
-  } catch (err) {
-    res.status(400).send("ERROR: " + err.message);
-  }
-});
-
-authRoutes.post("/login", async (req, res) => {
-  try {
-    const { emailId, password } = req.body;
-
-    const user = await User.findOne({ emailId: emailId });
-    if (!user) {
-      throw new Error("Email and password not correct");
-    }
-    const isPasswordValid = await user.validatePassword(password);
-
-    if (isPasswordValid) {
-      
-      const token = await user.getJWT();
-
-      res.cookie("token", token,{
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      });
-      res.send({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        emailId: user.emailId,
-        photoUrl: user.photoUrl,
-        age: user.age,
-        skills: user.skills,
-      });
-    } else {
-      throw new Error("Email and password not correct");
-    }
-  } catch (err) {
-    res.status(400).send("ERROR: " + err.message);
-  }
-});
-
-authRoutes.post("/logout", (req, res) => {
- 
-    res.cookie("token", null, {
-      expires: new Date(Date.now()),
-    });
-    res.send("Logout successful");
-});
-
-module.exports = authRoutes;
+module.exports = router;
