@@ -2,7 +2,7 @@
   "name": "new-folder",
   "version": "1.0.0",
   "description": "tinder",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js"
