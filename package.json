@@ -2,11 +2,12 @@
   "name": "new-folder",
   "version": "1.0.0",
   "description": "tinder",
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js"
   },
+
   "keywords": [
     "nodejs",
     "js",
