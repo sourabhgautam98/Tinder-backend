@@ -1,5 +1,5 @@
 const express = require("express");
-require("dotenv").config(); 
+require("dotenv").config();
 const connectDb = require("./config/database");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -11,7 +11,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: [
+      process.env.FRONTEND_URL,
+      "https://tinder-frontend-delta.vercel.app",
+    ],
     credentials: true,
   })
 );
