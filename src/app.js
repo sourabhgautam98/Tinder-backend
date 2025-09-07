@@ -9,9 +9,11 @@ const app = express();
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
+
+// Updated CORS configuration
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://tinder-frontend-delta.vercel.app"],
     credentials: true,              
   })
 );
