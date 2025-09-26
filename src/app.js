@@ -21,7 +21,9 @@ const authRoutes = require("./routes/auth");
 const requestRoutes = require("./routes/request");
 const profileRoutes = require("./routes/profile");
 const userRoutes = require("./routes/user");
+const postRoutes = require("./routes/post");
 
+app.use("/post", postRoutes);
 app.use("/auth", authRoutes);
 app.use("/requests", requestRoutes);
 app.use("/profile", profileRoutes);
