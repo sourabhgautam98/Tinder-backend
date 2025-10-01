@@ -27,7 +27,7 @@ const createPost = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate("userId", "firstName lastName emailId")
+      .populate("userId", "firstName lastName emailId photoUrl")
       .sort({ createdAt: -1 });
 
     res.json(posts);
