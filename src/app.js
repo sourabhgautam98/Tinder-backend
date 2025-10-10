@@ -17,7 +17,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-
       if (!origin) return callback(null, true);
       
       if (allowedOrigins.indexOf(origin) !== -1) {
@@ -29,6 +28,16 @@ app.use(
     credentials: true,
   })
 );
+
+// Health Check Route
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    message: "Server is running healthy"
+  });
+});
 
 // Routes
 const authRoutes = require("./routes/auth");
